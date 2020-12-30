@@ -17,9 +17,8 @@ def att_hat(q, k, v, phi, normalize=True):
     normalizer = 1 / (d ** 0.25)
     q_prime = phi(q * normalizer)
     k_prime = phi(k * normalizer)
-    a_hat = (q_prime @ k_prime.T)
-    d_inv = np.diag(1 / (a_hat @ np.ones(l)))
-    return d_inv @ a_hat @ v
+    d_inv = np.diag(1 / (q_prime @ (k_prime.T @ np.ones(l))))
+    return d_inv @ (q_prime @ (k_prime.T @ v))
 
 
 # random feature map
@@ -55,7 +54,6 @@ def positive_att_hat(q, k, v, random_feats, normalize=True):
     return att_hat(q, k, v, kernel, normalize)
 
 
-
 # generate IID Gaussian random features
 def iid_gaussian(m, d):
     return np.random.normal(size=(m, d))
@@ -86,12 +84,13 @@ def orthogonal_gaussian(m, d):
 def mse(a, b):
     return np.square(a - b).mean()
 
+
 ###############################################################################
 # The rest is just experiments
 ##############################################################################
 
 # sequence length and hidden dim
-l = 1024 # TODO: increase to 4096, will take longer
+l = 1024  # TODO: increase to 4096, will take longer
 d = 16
 
 num_samples = 15
@@ -131,19 +130,18 @@ def plot_line(x, y, label):
     mean = y.mean(axis=1)
     std = y.std(axis=1)
     plt.plot(x, mean, label=label)
-    plt.fill_between(x, mean+std, mean-std, alpha=0.1)
+    plt.fill_between(x, mean + std, mean - std, alpha=0.1)
 
 
 plt.figure(figsize=(5, 3), dpi=300)
 plot_line(ms, sincos, "Sin/Cos")
 plot_line(ms, positive, "Positive")
 plt.yscale("log")
-plt.ylim(1e-2, 1e8)
+# plt.ylim(1e-2, 1e8)
 plt.ylabel("Output MSE")
 plt.xlabel("Num. Features $R$")
-plt.legend();
+plt.legend()
 plt.savefig("trig_vs_positive.png", bbox_inches="tight")
-
 
 
 # Experiment:
@@ -180,7 +178,5 @@ plot_line(ms, ortho, "Orthogonal")
 plt.yscale("log")
 plt.ylabel("Output MSE")
 plt.xlabel("Num. Features $R$")
-plt.legend();
+plt.legend()
 plt.savefig("iid_vs_ortho.png", bbox_inches="tight")
-
-
